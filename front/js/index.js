@@ -14,6 +14,7 @@ function kanapCard(kanap){
     newImage.alt = kanap.altTxt;
     newTitle.textContent = kanap.name;
     newText.textContent = kanap.description;
+
     element.appendChild(newLink);
     newLink.appendChild(newArticle);
     newArticle.appendChild(newImage);
