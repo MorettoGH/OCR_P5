@@ -18,8 +18,40 @@ function createKanapInCart(){
     let newInput = document.createElement("input");
     let newDelete = document.createElement("p");
 
-    let kanapInCart = cart.filter(item => item.quantity);
-    console.log(kanapInCart);
+    for (let kanap of cart) {
+        newArticle.setAttribute("class", "cart__item")
+        newArticle.setAttribute("data-id", kanap.id);
+        newArticle.setAttribute("data-color", cart.color);
+        newDiv_1.setAttribute("class", "cart__item__img");
+        newDiv_2.setAttribute("class", "cart__item__content__settings");
+        newDiv_again.setAttribute("class", "cart__item__content__settings__quantity");
+        newInput.setAttribute("type", "number");
+        newInput.setAttribute("class","itemQuantity");
+        newInput.setAttribute("name", "itemQuantity");
+        newInput.setAttribute("min", "1");
+        newInput.setAttribute("max", "100");
+        newInput.setAttribute("value", kanap.quantity);
+        newDiv_again_2.setAttribute("class", "cart__item__content__settings__delete");
+        newDelete.setAttribute("class", "deleteItem");
+        newColor.textContent = kanap.color;
+        newQuantity.textContent = kanap.quantity;
+        newDelete.textContent = "Supprimer";
+    }
+
+    fetch("http://localhost:3000/API/products/")
+    .then(function(res) {
+        if (res.ok) {
+            return res.json();
+    }
+    })
+    .then(function(kanapList) {
+        for (let kanap of kanapList){
+            newImage.src = kanap.imageUrl;
+            newImage.alt = kanap.altTxt;
+            newTitle.textContent = kanap.name;
+            newPrice.textContent = kanap.price;
+        }    
+    });
 
     element.appendChild(newArticle);
     newArticle.appendChild(newDiv_1);
@@ -40,3 +72,4 @@ function createKanapInCart(){
 for (let kanap of cart) {
     createKanapInCart(kanap);
 }
+

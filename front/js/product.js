@@ -45,51 +45,10 @@ fetch("http://localhost:3000/API/products/" + productId)
 // le bouton "ajouter au panier" est stocké dans une constante
 const addToCart = document.getElementById("addToCart");
 
-// fonction qui insère l'objet "selection" dans un array + le array dans le localStorage en :
+// fonction qui insère l'objet "selection" dans un array et ensuite insère le array dans le localStorage en :
 // 1) verifiant si les champs "quantité" et "couleur" sont bien remplis
 // 2) verifiant si l'item n'est pas déjà présent dans le array en comparant son ID et sa couleur
 // 3) incrémente la quantité de l'item s'il est déja présent 
-
-// ---------------    incremente mais remplace le mauvais index (0)------------------
-/* function setStorage() {
-    let quantity = document.getElementById("quantity").value;
-    let color = document.getElementById("colors").value;
-    let selection = {
-        "id": productId,
-        "quantity": quantity,
-        "color": color                 
-    }
-    let cart = JSON.parse(localStorage.getItem("cart"));
-
-    if(quantity == 0 || color == '') {
-        alert("Veuillez choisir une quantité et une couleur");
-    }else if(cart){
-        let sameColor = cart.find(selection => selection.color === color);
-        let sameId = cart.find(selection => selection.id === productId);
-        
-        if(sameColor && sameId){
-            let findQuantity = cart.find(selection => selection.quantity);
-            let updateQuantity = parseInt(findQuantity.quantity) + parseInt(quantity);
-            let selection = {
-                "id": productId,
-                "quantity": updateQuantity.toString(),
-                "color": color                 
-            }
-            cart.splice(0, 1, selection);
-            localStorage.setItem("cart", JSON.stringify(cart));
-        }else{    
-            cart.push(selection);
-            localStorage.setItem("cart", JSON.stringify(cart));
-        }   
-    }else{
-        let cart = [];
-        cart.push(selection);
-        localStorage.setItem("cart", JSON.stringify(cart));
-    }
-}
-*/
-
-// -----------------------incremente mais seulement l'item qui est ajouté dans le cart en 1er-------------
 function setStorage() {
     let quantity = document.getElementById("quantity").value;
     let color = document.getElementById("colors").value;
@@ -103,18 +62,17 @@ function setStorage() {
     if(quantity == 0 || color == '') {
         alert("Veuillez choisir une quantité et une couleur");
     }else if(cart){
-        let filter = cart.filter(item => item.id == productId && item.color == color);
-        console.log(filter);
-
-        if (filter){
-            let findQuantity = cart.find(selection => selection.quantity);
-            let updatedQuantity = parseInt(findQuantity.quantity) + parseInt(selection.quantity);
-            let newSelection = {
+        let index = cart.findIndex(itemInCart => itemInCart.id+"-"+itemInCart.color === selection.id+"-"+selection.color);
+        let filter = cart.filter(itemInCart => itemInCart.id == selection.id && itemInCart.color == selection.color);
+        if (index >= 0){
+            let findQuantity = parseInt(filter[0].quantity);
+            let updatedQuantity = parseInt(findQuantity) + parseInt(quantity);
+            let selection = {
                 "id": productId,
                 "quantity": updatedQuantity.toString(),
                 "color": color                 
-        }
-            cart.push(newSelection);
+            }
+            cart[index] = selection;   
             localStorage.setItem("cart", JSON.stringify(cart));
         }else{
             cart.push(selection);
