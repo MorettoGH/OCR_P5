@@ -2,7 +2,7 @@
 let urlParams = new URLSearchParams(document.location.search);
 let productId = urlParams.get("id");
 
-// fonction qui affiche les bonnes datas liée à l'ID
+// fonction qui affiche les bonnes datas liées à l'ID
 function kanapItem(item){
     let element = document.querySelector(".item__img");
     let itemImage = document.createElement("img");

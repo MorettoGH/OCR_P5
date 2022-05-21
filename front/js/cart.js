@@ -1,7 +1,9 @@
 let cart = JSON.parse(localStorage.getItem("cart"));
-console.log(cart);
 
-function createKanapInCart(){
+// fonction qui affiche les bonnes datas en rapport avec :
+// 1) les items contenus dans le localStorage (le array nommé "cart")
+// 2) les items contenus dans l'API
+function createKanap(kanap){
     let element = document.querySelector("#cart__items");
     let newArticle = document.createElement("article");
     let newDiv_1 = document.createElement("div");
@@ -18,40 +20,23 @@ function createKanapInCart(){
     let newInput = document.createElement("input");
     let newDelete = document.createElement("p");
 
-    for (let kanap of cart) {
-        newArticle.setAttribute("class", "cart__item")
-        newArticle.setAttribute("data-id", kanap.id);
-        newArticle.setAttribute("data-color", cart.color);
-        newDiv_1.setAttribute("class", "cart__item__img");
-        newDiv_2.setAttribute("class", "cart__item__content__settings");
-        newDiv_again.setAttribute("class", "cart__item__content__settings__quantity");
-        newInput.setAttribute("type", "number");
-        newInput.setAttribute("class","itemQuantity");
-        newInput.setAttribute("name", "itemQuantity");
-        newInput.setAttribute("min", "1");
-        newInput.setAttribute("max", "100");
-        newInput.setAttribute("value", kanap.quantity);
-        newDiv_again_2.setAttribute("class", "cart__item__content__settings__delete");
-        newDelete.setAttribute("class", "deleteItem");
-        newColor.textContent = kanap.color;
-        newQuantity.textContent = kanap.quantity;
-        newDelete.textContent = "Supprimer";
-    }
-
-    fetch("http://localhost:3000/API/products/")
-    .then(function(res) {
-        if (res.ok) {
-            return res.json();
-    }
-    })
-    .then(function(kanapList) {
-        for (let kanap of kanapList){
-            newImage.src = kanap.imageUrl;
-            newImage.alt = kanap.altTxt;
-            newTitle.textContent = kanap.name;
-            newPrice.textContent = kanap.price;
-        }    
-    });
+    newArticle.setAttribute("class", "cart__item")
+    newArticle.setAttribute("data-id", kanap.id);
+    newArticle.setAttribute("data-color", kanap.color);
+    newDiv_1.setAttribute("class", "cart__item__img");
+    newDiv_2.setAttribute("class", "cart__item__content__settings");
+    newDiv_again.setAttribute("class", "cart__item__content__settings__quantity");
+    newInput.setAttribute("type", "number");
+    newInput.setAttribute("class","itemQuantity");
+    newInput.setAttribute("name", "itemQuantity");
+    newInput.setAttribute("min", "1");
+    newInput.setAttribute("max", "100");
+    newInput.setAttribute("value", "0");
+    newDiv_again_2.setAttribute("class", "cart__item__content__settings__delete");
+    newDelete.setAttribute("class", "deleteItem");
+    newColor.textContent = kanap.color;
+    newQuantity.textContent = kanap.quantity;
+    newDelete.textContent = "Supprimer";
 
     element.appendChild(newArticle);
     newArticle.appendChild(newDiv_1);
@@ -67,9 +52,66 @@ function createKanapInCart(){
     newDiv_again.appendChild(newQuantity)
     newDiv_again.appendChild(newInput);
     newDiv_again_2.appendChild(newDelete);
+
+    for (let i = 0; i < cart.length; i++ ){
+        fetch("http://localhost:3000/API/products/" + kanap.id)
+        .then(function(res) {
+        if (res.ok) {
+            return res.json();
+        }
+        })
+        .then(function(kanapApi) {
+            newImage.src = kanapApi.imageUrl;
+            newImage.alt = kanapApi.altTxt;
+            newTitle.textContent = kanapApi.name;
+            newPrice.textContent = kanapApi.price;
+        })
+    }          
 }
 
+// execution de la boucle pour afficher les datas
 for (let kanap of cart) {
-    createKanapInCart(kanap);
+    createKanap(kanap);  
 }
 
+/***************** BOUTON SUPPRIMER + UPDATE QUANTITY *************/
+/******************************************************************/
+
+let deleteButton = document.querySelectorAll(".deleteItem");
+console.log(deleteButton)
+
+function removeItem() {
+    console.log("hey");
+}
+
+for (let i = 0; i < deleteButton.length; i++) {
+    deleteButton[i].addEventListener("click", removeItem);
+    let deletedId = cart.id;
+    console.log(cart.id);
+    cart = cart.filter(itemInCart => itemInCart.id !== deletedId);
+
+}
+/*-----------------------*/
+
+let input = document.querySelectorAll(".itemQuantity"); 
+
+input.addEventListener('change', function () {
+    newQuantity.textContent = this.value;
+});
+
+
+/********************* FORM ****************************************************/
+
+const emailInput = document.querySelector("#email");
+
+emailInput.addEventListener('change', function(e) {
+    let emailValid = /^(([^<>()[]\.,;:s@]+(.[^<>()[]\.,;:s@]+)*)|(.+))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$/;
+    if (emailValid.test(document.querySelector("#email").value)) {
+        console.log("email valide");
+    }
+    else if(!document.querySelector("#email").value){
+        document.querySelector("#emailErrorMsg").textContent = "";
+    }else{
+        document.querySelector("#emailErrorMsg").textContent = "Adresse mail invalide";
+    }
+});
