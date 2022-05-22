@@ -74,30 +74,49 @@ for (let kanap of cart) {
     createKanap(kanap);  
 }
 
+
 /***************** BOUTON SUPPRIMER + UPDATE QUANTITY *************/
 /******************************************************************/
 
-let deleteButton = document.querySelectorAll(".deleteItem");
-console.log(deleteButton)
-
-function removeItem() {
-    console.log("hey");
-}
-
+// ---------- supprime le bouton seulement + test data-set
+/*
 for (let i = 0; i < deleteButton.length; i++) {
-    deleteButton[i].addEventListener("click", removeItem);
-    let deletedId = cart.id;
-    console.log(cart.id);
-    cart = cart.filter(itemInCart => itemInCart.id !== deletedId);
-
+    deleteButton[i].setAttribute("data-index", [i]);
 }
-/*-----------------------*/
 
-let input = document.querySelectorAll(".itemQuantity"); 
+element.onclick = function(e) {
+    if (e.target && e.target.classList.contains("deleteItem")) {
+        const index = e.target.dataset.index;
+        deleteButton[index].remove();
+    }
+}
+*/
+const articleToRemove = document.querySelectorAll(".cart__items");
+const deleteButton = document.querySelectorAll(".deleteItem");
+let inputQuantity = document.querySelectorAll(".itemQuantity");
+let updatedQuantity = document.querySelectorAll(".cart__item__content__settings__quantity p");
 
-input.addEventListener('change', function () {
-    newQuantity.textContent = this.value;
-});
+for (let i = 0; i < deleteButton.length; i++){
+    deleteButton[i].addEventListener("click", ()=>{
+        deleteButton[i].closest("article").remove();
+        //for (let k = 0; k < cart.length; k++){     
+        // cart.push(INDEX), 1);
+        // localStorage.setItem("cart", JSON.stringify(cart));
+        //}
+    });
+}
+
+/*-- inputQuantity[j].value = update toute les quantité en meme temps ------*/
+/*-- inputQuantity[jj].value = remet à zero les autres quantité ------*/
+
+for (let j = 0; j < inputQuantity.length; j++){
+    inputQuantity[j].addEventListener("change", ()=>{
+        for(let jj = 0; jj < updatedQuantity.length; jj++)
+        updatedQuantity[jj].textContent = inputQuantity[jj].value;
+    });
+}
+
+
 
 
 /********************* FORM ****************************************************/
