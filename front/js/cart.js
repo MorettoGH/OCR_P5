@@ -31,9 +31,13 @@ function createKanap(kanap){
     newInput.setAttribute("name", "itemQuantity");
     newInput.setAttribute("min", "1");
     newInput.setAttribute("max", "100");
-    newInput.setAttribute("value", "0");
+    newInput.setAttribute("value", kanap.quantity);
     newDiv_again_2.setAttribute("class", "cart__item__content__settings__delete");
     newDelete.setAttribute("class", "deleteItem");
+    newDelete.setAttribute("data-id", kanap.id);
+    newDelete.setAttribute("data-color", kanap.color);
+    newQuantity.setAttribute("data-id", kanap.id);
+    newQuantity.setAttribute("data-color", kanap.color);
     newColor.textContent = kanap.color;
     newQuantity.textContent = kanap.quantity;
     newDelete.textContent = "Supprimer";
@@ -64,7 +68,7 @@ function createKanap(kanap){
             newImage.src = kanapApi.imageUrl;
             newImage.alt = kanapApi.altTxt;
             newTitle.textContent = kanapApi.name;
-            newPrice.textContent = kanapApi.price;
+            newPrice.textContent = kanapApi.price + " €";
         })
     }          
 }
@@ -75,62 +79,176 @@ for (let kanap of cart) {
 }
 
 
-/***************** BOUTON SUPPRIMER + UPDATE QUANTITY *************/
+/*********** BOUTON SUPPRIMER + UPDATE QUANTITY + TOTAL PRICE *****/
 /******************************************************************/
 
-// ---------- supprime le bouton seulement + test data-set
-/*
-for (let i = 0; i < deleteButton.length; i++) {
-    deleteButton[i].setAttribute("data-index", [i]);
-}
-
-element.onclick = function(e) {
-    if (e.target && e.target.classList.contains("deleteItem")) {
-        const index = e.target.dataset.index;
-        deleteButton[index].remove();
-    }
-}
-*/
+/**************** delete button *******/
 const articleToRemove = document.querySelectorAll(".cart__items");
 const deleteButton = document.querySelectorAll(".deleteItem");
-let inputQuantity = document.querySelectorAll(".itemQuantity");
-let updatedQuantity = document.querySelectorAll(".cart__item__content__settings__quantity p");
 
+// remove l'item avec le dataset.id + dataset.color correspondant au bouton "supprimer"
 for (let i = 0; i < deleteButton.length; i++){
     deleteButton[i].addEventListener("click", ()=>{
         deleteButton[i].closest("article").remove();
-        //for (let k = 0; k < cart.length; k++){     
-        // cart.push(INDEX), 1);
-        // localStorage.setItem("cart", JSON.stringify(cart));
-        //}
+        let cartDeleteIndex = cart.findIndex(itemInCart => itemInCart.id === deleteButton[i].dataset.id && itemInCart.color === deleteButton[i].dataset.color);
+        cart.splice(cartDeleteIndex, 1);
+        localStorage.setItem("cart", JSON.stringify(cart));
     });
 }
 
-/*-- inputQuantity[j].value = update toute les quantité en meme temps ------*/
-/*-- inputQuantity[jj].value = remet à zero les autres quantité ------*/
 
+/************** modify quantity button *******/
+let inputQuantity = document.querySelectorAll(".itemQuantity");
+let updatedQuantity = document.querySelectorAll(".cart__item__content__settings__quantity p");
+
+// change la quantité sur le DOM et dans le localStorage quand on change la quantité dans l'input
 for (let j = 0; j < inputQuantity.length; j++){
     inputQuantity[j].addEventListener("change", ()=>{
-        for(let jj = 0; jj < updatedQuantity.length; jj++)
-        updatedQuantity[jj].textContent = inputQuantity[jj].value;
+        updatedQuantity[j].textContent = inputQuantity[j].value;
+        let quantityUpdateIndex = cart.findIndex(itemInCart => itemInCart.id === updatedQuantity[j].dataset.id && itemInCart.color === updatedQuantity[j].dataset.color);
+        cart[quantityUpdateIndex].quantity = inputQuantity[j].value;
+        localStorage.setItem("cart", JSON.stringify(cart));
     });
 }
 
+/************** total price ***************/
+let totalDisplay = document.querySelector("#totalPrice"); 
 
+function test() {
+    let totalPriceArray = [];
+    for (let k = 0; k < cart.length; k++){
+        fetch("http://localhost:3000/API/products/" + cart[k].id)
+            .then(function(res) {
+            if (res.ok) {
+                return res.json();
+            }
+            })
+            .then(function(kanapApi) {
+                let total = kanapApi.price * cart[k].quantity;
+                totalPriceArray.push(total);
+                let totalPriceSum = (accumulator, value) => accumulator + value;
+                let totalPrice = totalPriceArray.reduce(totalPriceSum);
+                totalDisplay.textContent = totalPrice;
+            })
+    }
+}
+
+for (let j = 0; j < inputQuantity.length; j++) {
+    inputQuantity[j].addEventListener("change", ()=>{
+    test();
+})}
+
+test();
 
 
 /********************* FORM ****************************************************/
-
+/*******************************************************************************/
+const firstNameInput = document.querySelector("#firstName");
+const lastNameInput = document.querySelector("#lastName");
+const addressInput = document.querySelector("#address");
+const cityInput = document.querySelector("#city");
 const emailInput = document.querySelector("#email");
+const orderInput = document.querySelector("#order");
 
-emailInput.addEventListener('change', function(e) {
-    let emailValid = /^(([^<>()[]\.,;:s@]+(.[^<>()[]\.,;:s@]+)*)|(.+))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$/;
-    if (emailValid.test(document.querySelector("#email").value)) {
-        console.log("email valide");
+
+function sendOrder() {
+    let contact = {
+        firstName: firstNameInput.value, 
+        lastName: lastNameInput.value, 
+        address: addressInput.value, 
+        city: cityInput.value, 
+        email: emailInput.value
+    }    
+    let products = [];
+    let itemsInCart = JSON.parse(localStorage.getItem("cart"));
+        for (let i = 0; i < itemsInCart.length; i++) {
+            products.push(itemsInCart[i].id)
+        }
+    let order = {
+        contact : contact,
+        products : products
     }
-    else if(!document.querySelector("#email").value){
-        document.querySelector("#emailErrorMsg").textContent = "";
+    fetch("http://localhost:3000/API/products/order", {
+        method: "POST",
+        headers: {
+            'Accept': 'application/json', 
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(order)
+    })
+    .then(function(res) {
+        if (res.ok) {
+        return res.json();
+        }
+    })
+    .then(function(value) {
+        document.location.href = "confirmation.html?orderId="+value.orderId;
+    });
+}
+
+
+function nameValidation(field, err, msg){
+    field.value.trim();
+    let nameValid = /^[a-zA-ZÀ-ÿ- ']{2,40}$/;
+    if (nameValid.test(field.value)) {
+        console.log("oui");
+        return true;
     }else{
-        document.querySelector("#emailErrorMsg").textContent = "Adresse mail invalide";
+        document.querySelector("#"+err+"ErrorMsg").textContent = msg+" invalide";
+        console.log("non");
+        return false;
+    }
+}
+
+function form_verify() {
+    nameValidation(firstNameInput, "firstName", "Prénom");
+    nameValidation(lastNameInput, "lastName", "Nom");
+}
+     
+orderInput.addEventListener("click", function(e) {
+    e.preventDefault();
+    if (form_verify() == true){
+        console.log("Formulaire accepté");
+        //sendOrder();
+    }else{
+        sendOrder();
+        console.log("NOPE");
     }
 });
+
+addressInput.addEventListener('change', function() {
+    let addressValid = /^[a-zA-ZÀ-ÿ0-9- ',]{2,70}$/;
+    if (addressValid.test(document.querySelector("#address").value)) {
+        return true;
+    }else{
+        document.querySelector("#addressErrorMsg").textContent = "Adresse invalide";
+        return false;
+    }
+});
+
+cityInput.addEventListener('change', function() {
+    let cityValid = /^[a-zA-ZÀ-ÿ0-9- ',]{2,40}$/;
+    if (cityValid.test(document.querySelector("#city").value)) {
+        return true;
+    }else{
+        document.querySelector("#cityErrorMsg").textContent = "Ville invalide";
+        return false;
+    }
+});
+
+emailInput.addEventListener('change', function() {
+    let emailValid = /^(([^<>()[]\.,;:s@]+(.[^<>()[]\.,;:s@]+)*)|(.+))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$/;
+    if (emailValid.test(document.querySelector("#email").value)) {
+        return true;
+    }else if(!document.querySelector("#email").value){
+        console.log('vide');
+        return false;  
+    }else{
+        document.querySelector("#emailErrorMsg").textContent = "Adresse mail invalide";
+        return false;
+    }
+});
+
+
+
+

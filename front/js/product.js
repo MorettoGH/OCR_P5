@@ -83,7 +83,16 @@ function setStorage() {
         cart.push(selection);
         localStorage.setItem("cart", JSON.stringify(cart));
     }
+    cart.sort(cartSort("id"));  
+    localStorage.setItem("cart", JSON.stringify(cart));
 }
+// tri le localstorage par id
+function cartSort(id) {
+    return function(a, b) {
+        return (a[id] < b[id]) ? -1 : (a[id] > b[id]) ? 1 : 0;
+    }
+}
+ 
 
 // event qui lance la fonction
 addToCart.addEventListener("click", (setStorage));
