@@ -111,10 +111,10 @@ for (let j = 0; j < inputQuantity.length; j++){
     });
 }
 
-/************** total price ***************/
+/************** calcul total price ***************/
 let totalDisplay = document.querySelector("#totalPrice"); 
 
-function test() {
+function calc() {
     let totalPriceArray = [];
     for (let k = 0; k < cart.length; k++){
         fetch("http://localhost:3000/API/products/" + cart[k].id)
@@ -135,10 +135,10 @@ function test() {
 
 for (let j = 0; j < inputQuantity.length; j++) {
     inputQuantity[j].addEventListener("change", ()=>{
-    test();
+    calc();
 })}
 
-test();
+calc();
 
 
 /********************* FORM ****************************************************/
@@ -150,7 +150,7 @@ const cityInput = document.querySelector("#city");
 const emailInput = document.querySelector("#email");
 const orderInput = document.querySelector("#order");
 
-
+// fonction qui créer un object contact et un array qu'on envoi à l'API et qui retourne un orderId
 function sendOrder() {
     let contact = {
         firstName: firstNameInput.value, 
@@ -186,66 +186,65 @@ function sendOrder() {
     });
 }
 
-
+// verifications Fname et Lname avec regex 
 function nameValidation(field, err, msg){
     field.value.trim();
     let nameValid = /^[a-zA-ZÀ-ÿ- ']{2,40}$/;
     if (nameValid.test(field.value)) {
-        console.log("oui");
+        console.log("name valid");
         return true;
     }else{
         document.querySelector("#"+err+"ErrorMsg").textContent = msg+" invalide";
-        console.log("non");
+        console.log("name NO");
         return false;
     }
 }
 
-function form_verify() {
-    nameValidation(firstNameInput, "firstName", "Prénom");
-    nameValidation(lastNameInput, "lastName", "Nom");
+// verification adress et city avec regex
+function locationValidation(field, err, msg){
+    field.value.trim();
+    let locValid = /^[a-zA-ZÀ-ÿ0-9- ',]{2,60}$/;
+    if (locValid.test(field.value)) {
+        console.log("loc valid");
+        return true;
+    }else{
+        document.querySelector("#"+err+"ErrorMsg").textContent = msg+" invalide";
+        console.log("loc NO");
+        return false;
+    }
 }
-     
+
+// verification email avec regex
+function emailValidation(field, err, msg){
+    field.value.trim();
+    let emailValid = /^(([^<>()[]\.,;:s@]+(.[^<>()[]\.,;:s@]+)*)|(.+))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$/;
+    if (emailValid.test(field.value)) {
+        console.log("email valid");
+        return true;
+    }else{
+        document.querySelector("#"+err+"ErrorMsg").textContent = msg+" invalide";
+        console.log("email NO");
+        return false;
+    }
+}
+
+// fonction qui vérifie le statut boolean de toute les verifications d'input
+function form_verify() {
+    return (nameValidation(firstNameInput, "firstName", "Prénom") 
+        && nameValidation(lastNameInput, "lastName", "Nom")
+        && locationValidation(addressInput, "address", "Adresse")
+        && locationValidation(cityInput, "city", "Ville")
+        && emailValidation(emailInput, "email", "Adresse mail"));
+}
+
+// event qui lance la commande apres les verifications
 orderInput.addEventListener("click", function(e) {
     e.preventDefault();
     if (form_verify() == true){
         console.log("Formulaire accepté");
-        //sendOrder();
-    }else{
         sendOrder();
+    }else{
         console.log("NOPE");
-    }
-});
-
-addressInput.addEventListener('change', function() {
-    let addressValid = /^[a-zA-ZÀ-ÿ0-9- ',]{2,70}$/;
-    if (addressValid.test(document.querySelector("#address").value)) {
-        return true;
-    }else{
-        document.querySelector("#addressErrorMsg").textContent = "Adresse invalide";
-        return false;
-    }
-});
-
-cityInput.addEventListener('change', function() {
-    let cityValid = /^[a-zA-ZÀ-ÿ0-9- ',]{2,40}$/;
-    if (cityValid.test(document.querySelector("#city").value)) {
-        return true;
-    }else{
-        document.querySelector("#cityErrorMsg").textContent = "Ville invalide";
-        return false;
-    }
-});
-
-emailInput.addEventListener('change', function() {
-    let emailValid = /^(([^<>()[]\.,;:s@]+(.[^<>()[]\.,;:s@]+)*)|(.+))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$/;
-    if (emailValid.test(document.querySelector("#email").value)) {
-        return true;
-    }else if(!document.querySelector("#email").value){
-        console.log('vide');
-        return false;  
-    }else{
-        document.querySelector("#emailErrorMsg").textContent = "Adresse mail invalide";
-        return false;
     }
 });
 

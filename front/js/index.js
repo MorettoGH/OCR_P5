@@ -9,6 +9,8 @@ function kanapCard(kanap){
     let newTitle = document.createElement("h3");
     let newText = document.createElement("p");
 
+    newTitle.setAttribute("class", "productName");
+    newText.setAttribute("class", "productDescription");
     newLink.href ="./product.html?id=" + kanap._id;
     newImage.src = kanap.imageUrl;
     newImage.alt = kanap.altTxt;
