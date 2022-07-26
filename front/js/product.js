@@ -45,6 +45,11 @@ fetch("http://localhost:3000/API/products/" + productId)
 // le bouton "ajouter au panier" est stocké dans une constante
 const addToCart = document.getElementById("addToCart");
 
+// message pop-up qui indique l'utilisateur que l'objet à été ajouté au panier
+function itemAdded() {
+    alert("Produit ajouté au panier !");
+}
+
 // fonction qui insère l'objet "selection" dans un array et ensuite insère le array dans le localStorage en :
 // 1) verifiant si les champs "quantité" et "couleur" sont bien remplis
 // 2) verifiant si l'item n'est pas déjà présent dans le array en comparant son ID et sa couleur
@@ -74,14 +79,17 @@ function setStorage() {
             }
             cart[index] = selection;   
             localStorage.setItem("cart", JSON.stringify(cart));
+            itemAdded();
         }else{
             cart.push(selection);
             localStorage.setItem("cart", JSON.stringify(cart));  
+            itemAdded();
         } 
     }else{
         let cart = [];
         cart.push(selection);
         localStorage.setItem("cart", JSON.stringify(cart));
+        itemAdded();
     }
     cart.sort(cartSort("id"));  
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -92,7 +100,6 @@ function cartSort(id) {
         return (a[id] < b[id]) ? -1 : (a[id] > b[id]) ? 1 : 0;
     }
 }
- 
 
 // event qui lance la fonction
-addToCart.addEventListener("click", (setStorage));
+addToCart.addEventListener("click", (setStorage))

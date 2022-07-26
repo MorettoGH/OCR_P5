@@ -82,20 +82,6 @@ for (let kanap of cart) {
 /*********** BOUTON SUPPRIMER + UPDATE QUANTITY + TOTAL PRICE *****/
 /******************************************************************/
 
-/**************** delete button *******/
-const articleToRemove = document.querySelectorAll(".cart__items");
-const deleteButton = document.querySelectorAll(".deleteItem");
-
-// remove l'item avec le dataset.id + dataset.color correspondant au bouton "supprimer"
-for (let i = 0; i < deleteButton.length; i++){
-    deleteButton[i].addEventListener("click", ()=>{
-        deleteButton[i].closest("article").remove();
-        let cartDeleteIndex = cart.findIndex(itemInCart => itemInCart.id === deleteButton[i].dataset.id && itemInCart.color === deleteButton[i].dataset.color);
-        cart.splice(cartDeleteIndex, 1);
-        localStorage.setItem("cart", JSON.stringify(cart));
-    });
-}
-
 
 /************** modify quantity button *******/
 let inputQuantity = document.querySelectorAll(".itemQuantity");
@@ -113,9 +99,16 @@ for (let j = 0; j < inputQuantity.length; j++){
 
 /************** calcul total price ***************/
 let totalDisplay = document.querySelector("#totalPrice"); 
+let totalQuantity = document.querySelector("#totalQuantity");
+totalDisplay.textContent = "0";
+totalQuantity.textContent= "0";
 
+// fonction qui calcule le prix total des produits du panier
+// 1) cherche le prix de chaque produit dans l'API
+// 2) fait un calcul dans un tableau via un accumulateur pour le nombre d'articles et le prix total
 function calc() {
     let totalPriceArray = [];
+    let totalItemArray = [];
     for (let k = 0; k < cart.length; k++){
         fetch("http://localhost:3000/API/products/" + cart[k].id)
             .then(function(res) {
@@ -124,12 +117,22 @@ function calc() {
             }
             })
             .then(function(kanapApi) {
+                let totalItems = parseInt(cart[k].quantity);
+                totalItemArray.push(totalItems);
+                let totalItemSum = (accumulator, value) => accumulator + value;
+                let totalItemsInCart = totalItemArray.reduce(totalItemSum);
+                totalQuantity.textContent = totalItemsInCart;
+                
                 let total = kanapApi.price * cart[k].quantity;
                 totalPriceArray.push(total);
                 let totalPriceSum = (accumulator, value) => accumulator + value;
                 let totalPrice = totalPriceArray.reduce(totalPriceSum);
                 totalDisplay.textContent = totalPrice;
             })
+    }
+    if (cart.length == 0){
+        totalQuantity.textContent = "0";
+        totalDisplay.textContent = "0";
     }
 }
 
@@ -139,6 +142,21 @@ for (let j = 0; j < inputQuantity.length; j++) {
 })}
 
 calc();
+
+/**************** delete button *******/
+const articleToRemove = document.querySelectorAll(".cart__items");
+const deleteButton = document.querySelectorAll(".deleteItem");
+
+// remove l'item avec le dataset.id + dataset.color correspondant au bouton "supprimer" et calcule le nombre d'articles avec calc()
+for (let i = 0; i < deleteButton.length; i++){
+    deleteButton[i].addEventListener("click", ()=>{
+        deleteButton[i].closest("article").remove();
+        let cartDeleteIndex = cart.findIndex(itemInCart => itemInCart.id === deleteButton[i].dataset.id && itemInCart.color === deleteButton[i].dataset.color);
+        cart.splice(cartDeleteIndex, 1);
+        localStorage.setItem("cart", JSON.stringify(cart));
+        calc();
+    });
+}
 
 
 /********************* FORM ****************************************************/
